@@ -6,5 +6,6 @@ module.exports = {
       localeDir: 'lang',
       enableInSFC: true
     }
-  }
+  },
+  publicPath: '/pronunciation-survey/'
 }

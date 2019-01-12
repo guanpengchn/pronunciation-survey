@@ -1,7 +1,8 @@
 export default {
   first: {
-    title: 'Can you pronounce accurately?',
-    subTitle: 'Test <strong>10</strong> words and <strong>2</strong> seconds for per word. <br/>Suggest to make a real sound to compare.',
+    title: 'Programming Word! Can you pronounce it?',
+    subTitle: `<br/>This survey will test <strong>10</strong> words and each word has <strong>2</strong> seconds to prepare. Suggest you try to pronunce yourself and listen to the results.<br/><br/>
+    Tips: pay attention to <strong>stress</strong>.`,
     login: 'login',
     start: 'Let\'s go!'
   },
@@ -19,7 +20,7 @@ export default {
   submit: 'Submit',
   radio: {
     yes: 'Yes',
-    no: 'No',
+    no: 'No(or wrong)',
     never: 'Never seen'
   }
 }

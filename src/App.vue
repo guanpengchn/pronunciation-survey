@@ -1,16 +1,16 @@
 <template>
-<v-app id="app">
+  <v-app id="app">
     <v-container class="container">
       <template v-if="isWelcome">
         <v-card class="card" color="lighten-1">
-          <span class="main-title" v-html='$t("first.title")'></span>
-          <span class="sub-title" v-html='$t("first.subTitle")'></span>
+          <span class="main-title" v-html="$t('first.title')"></span>
+          <span class="sub-title" v-html="$t('first.subTitle')"></span>
           <template v-if="isLogin">
             <v-btn @click="welcome" color="success">{{ $t("first.start") }}</v-btn>
           </template>
           <template v-else>
-            <v-progress-circular :class="{hide: !isCode}" color="green" indeterminate></v-progress-circular>
-            <v-btn :class="{hide: isCode}" @click="login" color="success">
+            <v-progress-circular :class="{hide: !isInit}" color="green" indeterminate></v-progress-circular>
+            <v-btn :class="{hide: isInit}" @click="login" color="success">
               <svg
                 class="icon"
                 height="24"
@@ -31,7 +31,7 @@
       <template v-else-if="isOver">
         <v-card class="card" color="lighten-1">
           <span class="main-title">{{ $t("last.title") }}</span>
-          <span class="sub-title" v-html='$t("last.subTitle")'></span>
+          <span class="sub-title" v-html="$t('last.subTitle')"></span>
         </v-card>
       </template>
       <template v-else>
@@ -82,9 +82,9 @@
               v-for="(word,i) in words"
               v-model="answers[i]"
             >
-              <v-radio :label='$t("radio.yes")' :value='$t("radio.yes")'></v-radio>
-              <v-radio :label='$t("radio.no")' :value='$t("radio.no")'></v-radio>
-              <v-radio :label='$t("radio.never")' :value='$t("radio.never")'></v-radio>
+              <v-radio :label="$t('radio.yes')" :value="$t('radio.yes')"></v-radio>
+              <v-radio :label="$t('radio.no')" :value="$t('radio.no')"></v-radio>
+              <v-radio :label="$t('radio.never')" :value="$t('radio.never')"></v-radio>
             </v-radio-group>
           </div>
         </v-card>
@@ -102,11 +102,7 @@
 
 <script>
 import { getRepoContent, createComment } from '@/api'
-import {
-  b64ToUtf8,
-  queryParse,
-  axiosJSON
-} from '@/utils/helper'
+import { b64ToUtf8, queryParse, axiosJSON } from '@/utils/helper'
 import { clientId, clientSecret, ACCESS_TOKEN, PROXY, LANG } from '@/config'
 
 export default {
@@ -124,7 +120,7 @@ export default {
       isWelcome: true,
       isOver: false,
       isTime: true,
-      isCode: false,
+      isInit: false,
       totalTime: 0,
       reverseTime: 2,
       interval: {}
@@ -137,7 +133,7 @@ export default {
       localStorage.setItem(LANG, query.lang)
     }
     if (query.code) {
-      this.isCode = true
+      this.isInit = true
       const code = query.code
       axiosJSON
         .post(PROXY, {
@@ -149,7 +145,7 @@ export default {
           if (res.data && res.data.access_token) {
             const accessToken = res.data.access_token
             localStorage.setItem(ACCESS_TOKEN, accessToken)
-            window.location.href = `/`
+            window.location.href = `/pronunciation-survey/`
           } else {
             // no access_token
             console.log('res.data err:', res.data)
@@ -159,15 +155,16 @@ export default {
           console.log('err: ', err)
         })
     } else if (localStorage.getItem(ACCESS_TOKEN)) {
-      this.isCode = false
-      this.isLogin = true
+      this.isInit = true
       getRepoContent(this.repoName, this.filename).then(item => {
         let content = JSON.parse(b64ToUtf8(item.content))
         this.getWords(content)
+        this.isInit = false
+        this.isLogin = true
         this.pageDisabled = false
       })
     } else {
-      this.isCode = false
+      this.isInit = false
       this.isLogin = false
       this.pageDisabled = true
     }
@@ -203,7 +200,9 @@ export default {
     },
     display(id) {
       const audio = document.getElementById(id)
-      audio.play()
+      setTimeout(function() {
+        audio.play()
+      }, 50)
     },
     submit() {
       this.submitDisabled = true
@@ -231,7 +230,11 @@ export default {
           return
         }
         for (const i of this.answers) {
-          if (i !== this.$t('radio.yes') && i !== this.$t('radio.no') && i !== this.$t('radio.never')) {
+          if (
+            i !== this.$t('radio.yes') &&
+            i !== this.$t('radio.no') &&
+            i !== this.$t('radio.never')
+          ) {
             this.submitDisabled = true
             return
           }
@@ -240,8 +243,11 @@ export default {
       }, 200)
     },
     login() {
-      // window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=public_repo&redirect_uri=https://guanpengchn.github.io/#/question`
-      window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=public_repo`
+      if (process.env.NODE_ENV === 'development') {
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=public_repo&redirect_uri=http://127.0.0.1:8080/pronunciation-survey/`
+      } else {
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=public_repo&redirect_uri=https://guanpengchn.github.io/pronunciation-survey/`
+      }
     },
     countDown() {
       this.interval = setInterval(() => {
@@ -288,7 +294,7 @@ export default {
   /* min-width: 88px; */
 }
 .word p {
-  font-size:30px;
+  font-size: 30px;
   color: #1976d2;
 }
 .symbol {
@@ -344,10 +350,7 @@ export default {
     flex: auto;
   }
   .footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: none;
   }
   .card {
     display: flex;
