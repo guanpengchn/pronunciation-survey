@@ -1,0 +1,6 @@
+export const clientId = '3bffa5a5593d3f112758'
+export const clientSecret = '1147929f2267cfcb5abb1e27e91a98a47316c557'
+export const owner = 'guanpengchn'
+export const ACCESS_TOKEN = 'ACCESS_TOKEN'
+export const LANG = 'LANG'
+export const PROXY = 'https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token'
